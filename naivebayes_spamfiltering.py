@@ -3,6 +3,7 @@
 import sys
 import math
 import random
+import argparse
 from collections import defaultdict
 from sklearn.cross_validation import train_test_split
 
@@ -68,16 +69,14 @@ def read_data(f):
         
     return (X, Y)
 
-if __name__ == "__main__":
-    
+def main(k_fold, test_size):
     with open("./spambase.data", "r") as f:
         X, Y = read_data(f)
 
     #交差検定
-    n_fold=10
     accuracys=[]
-    for i in range(n_fold):
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1, random_state=i)
+    for i in range(k_fold):
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=i)
         word_dict, p_cates, numwords_cates, V = NV_train(X_train, Y_train)
         print "====%d====" % (i)
         print "trining finished"
@@ -86,3 +85,28 @@ if __name__ == "__main__":
         print "accuracy=%f" % (accuracy)
     print "===="
     print "average accuracy=%f" % (sum(accuracys)/len(accuracys))
+
+
+if __name__ == "__main__":
+    
+    #交差検定の値指定
+    #k, test_size
+    desc = u'{0} [Args] [Options]\nDetailed options -h or --help'.format(__file__)
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument(
+        '-k', '--k_fold',
+        type = int,
+        dest = 'k_fold',
+        default = 10,
+        help = 'k-value for k-fold cross-validation'
+    )
+    parser.add_argument(
+        '-t', '--test_size',
+        type = float,
+        dest = 'test_size',
+        default = 0.1,
+        help = 'test_size for k-fold cross-validation'
+    )
+    args = parser.parse_args()
+
+    main(args.k_fold, args.test_size)
